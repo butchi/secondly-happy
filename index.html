@@ -1,0 +1,70 @@
+<!--03 数式をランダムに表示、CSSを適用-->
+<html>
+<head>
+<style>
+h1 {font-size: 50px; background-color: #9999FF;}
+#time {font-size: 30px;}
+#daily {background-color: #9999FF;}
+#secondly div {background-color: #CCCCFF; padding:5px; margin:5px;}
+</style>
+<script src="jquery-1.6.4.min.js" type="text/javascript"></script>
+<script src="database01.js" type="text/javascript"></script>
+<script>
+var time = 65; // カウントする秒数
+var minute;
+var second;
+var timerID;
+var now;
+
+window.addEventListener("load", start, false);
+function start() {
+	clearInterval(timerID);
+	time = parseInt($('#minuteInput').val())*60 + parseInt($('#secondInput').val());
+	update();
+	updateMinute();
+	timerID = setInterval(update, 1000);
+}
+
+function update() {
+	updateTime();
+	var secondly_data = data_array[Math.floor( Math.random() * data_array.length )];
+	if(now.getSeconds()==0) {
+		updateMinute();
+	}
+	$('#secondly').prepend("<div>"+secondly_data+"</div>");
+}
+
+function updateMinute() {
+	//minute = Math.floor(time/60);
+	//var minuteEquation = equation_array[minute][Math.floor( Math.random() * equation_array[minute].length )];
+	//$('#minuteCounter').html(minuteEquation);
+	//$('#minuteLog').html("<div>"+minute+" = "+minuteEquation+"</div>");
+}
+
+function updateTime() {
+	now = new Date()
+	var weeks = new Array('日','月','火','水','木','金','土');
+	
+	var year = now.getYear(); // 年
+	var month = now.getMonth() + 1; // 月
+	var day = now.getDate(); // 日
+	var week = weeks[ now.getDay() ]; // 曜日
+	var hour = now.getHours(); // 時
+	var min = now.getMinutes(); // 分
+	var sec = now.getSeconds(); // 秒
+	if(year < 2000) { year += 1900; }
+	
+	$('#time').html(year + '年' + month + '月' + day + '日（' + week + '）' + hour + '時' + min + '分' + sec + '秒');
+}
+
+</script>
+</head>
+<body>
+
+<h1>秒刊ハッピー</h1>
+<div id="time"></div>
+<div id="daily"></div>
+<div id="secondly"></div>
+
+</body>
+</html>
