@@ -1,4 +1,4 @@
-<!-- 06 データベースの形式を変更 -->
+<!-- 07 更新間隔設定、一時停止機能を追加 -->
 <html>
 <head>
 <meta charset="UTF-8">
@@ -17,6 +17,7 @@ h1 {font-size: 50px; background-color: #9999FF;}
 <script src="database06.js" type="text/javascript"></script>
 <script>
 var timerID;
+var timerInterval = 1; // 更新間隔（秒）
 var RSStimerID;
 var weeks = new Array('日','月','火','水','木','金','土');
 var now;
@@ -55,11 +56,27 @@ function start() {
 	updateHour();
 	updateDay();
 	updateRSS();
-	timerID = setInterval(update, 1000);
+	timerID = setInterval(update, timerInterval*1000);
 	
 	RSStimerID = setInterval(updateRSS,10000);
 	
 	//$('#daily').load('secondly_happy03_loadTest.html');
+}
+
+function restart(interval) {
+	// 更新時間の選択でリセット
+	timerInterval = interval;
+	clearInterval(timerID);
+	timerID = setInterval(update, timerInterval*1000);
+}
+
+function pause(isPause) {
+	if(isPause) {
+		clearInterval(timerID);
+	} else {
+		clearInterval(timerID);
+		timerID = setInterval(update, timerInterval*1000);
+	}
 }
 
 function update() {
@@ -143,6 +160,11 @@ function updateRSS() {
 
 <h1>秒刊ハッピー</h1>
 <div id="time"></div>
+更新時間: 
+<label><input type="radio" name="updateInterval" value="1" onClick="restart(1);">1秒</label>
+<label><input type="radio" name="updateInterval" value="3" onClick="restart(3);">3秒</label>
+<label><input type="radio" name="updateInterval" value="5" onClick="restart(5);">5秒</label>
+<label><input type="checkbox" id="pauseCheckbox" name="pause" value="pause" onClick="pause(($(this).attr('checked')=='checked')?true:false);");">一時停止</label>
 <div id="daily"></div>
 <div id="hourly"></div>
 <div id="minutely"></div>
