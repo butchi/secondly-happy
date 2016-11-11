@@ -83,7 +83,7 @@ function update() {
 	updateTime();
 	var secondlyInformation;
 	if(feed_array.length>0 && (second % 5 == 0)) {
-		secondlyInformation = {"tag": "Twitter", "icon": "", "内容": feed_array.shift().title, "詳細": "", "リンク": ""};
+		secondlyInformation = {"tag": "Twitter", "icon": "", "内容": feed_array.shift().title, "detail": "詳細", "link": ""};
 	} else {
 		secondlyInformation = secondly_array['items'][Math.floor( Math.random() * secondly_array['items'].length )];
 	}
@@ -94,7 +94,12 @@ function update() {
 	} else {
 		secondlyImg = '';
 	}
-	$('#secondlyon').prepend('<div class="information"><p>'+secondlyImg+'【'+secondlyInformation['tag']+'】'+secondlyInformation['内容']+'</p></div>');
+	if(secondlyInformation['detail'] == "") {
+		$('#secondlyon').prepend('<div class="information"><p>'+secondlyImg+'【'+secondlyInformation['tag']+'】'+secondlyInformation['content']+'</p></div>');
+	} else {
+		var detailEncoded = encodeURI(secondlyInformation['detail']);
+		$('#secondlyon').prepend('<div class="informationWithDetail" onClick="location.href=\'detail.html?'+ detailEncoded +'\';"><p>'+secondlyImg+'【'+secondlyInformation['tag']+'】'+secondlyInformation['content']+'</p></div>');
+	}
 	if(second==0) {
 		//updateMinute();
 		if(minute==0) {
