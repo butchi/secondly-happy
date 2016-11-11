@@ -2,7 +2,7 @@
 <html lang="ja">
 	<head>
 		<meta charset="utf-8">
-		<title>毎秒更新！秒刊ハッピー</title>
+		<title>sample004b</title>
 		<meta name="keywords" content="HTML5">
 		<meta name="description" content="HTML5のサンプルページ">
 		<meta name="viewport" content="width=device-width , initial-scale=1.0 , minimum-scale=1.0 , maximum-scale=1.0 , user-scalable=no">
@@ -10,14 +10,36 @@
 		<link rel="apple-touch-icon" href="images/icon.png">  
 		<link rel="stylesheet" href="css/html5reset-1.6.1.css">
 		<link rel="stylesheet" href="css/detail.css">
-		<script src="js/jquery-1.6.4.min.js" type="text/javascript"></script>
-<script>
-function display() {
-	$('#detail').html(decodeURI(location.search.substring(1)));
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script>
+var QS = new Array;
+if (location.search.length > 1) {
+　var m_Array = location.search.substr(1).split("&");
+　for (idx in m_Array) {
+	temp_array = m_Array[idx].split("=");
+　　QS[temp_array[0]] = temp_array[1];
+　}
 }
-</script>
+function display() {
+	$('#content').html(decodeURI(QS['content']));
+	$('#detail').html(decodeURI(QS['detail']));
+}
+		</script>
 	</head>
 	<body onLoad="display();">
-    	<div id="detail"></div>
+		<div id="header">
+		<header>
+			<h1>秒刊ハッピー</h1>			
+		</header>
+		</div>
+		<div id="wapper">
+				<article>
+					<h2 id="content"><!--てすと--></h2>
+					<p id="detail">
+						<!--<img src="ico-hoge" align="left"　　 />-->
+						<!--あああああああああああああ-->
+					</p>
+				</article>
+		</div>
 	</body>
 </html>

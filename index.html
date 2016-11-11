@@ -33,6 +33,7 @@ var minute; // 分
 var second = 60; // 秒
 var second_old;
 var count = 0;
+var isPause = false;
 
 var timelyInformation;
 var hourlyInformation;
@@ -86,7 +87,8 @@ function restart(interval) {
 	timerID = setInterval(update, timerInterval*1000);
 }
 
-function pause(isPause) {
+function pause() {
+	isPause = !isPause;
 	if(isPause) {
 		clearInterval(timerID);
 	} else {
@@ -133,14 +135,14 @@ function update() {
 		break;
 	}
 	if(timelyInformation['tag'] == "Twitter") {
-		$('#secondlyon').prepend('<div class="twitter" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+		$('#secondlyInformation').prepend('<div class="twitter" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	} else if(timelyInformation['detail'] != null) {
 		var detailEncoded = encodeURI(timelyInformation['detail']);
-		$('#secondlyon').prepend('<div class="informationWithDetail" onClick="location.href=\'detail.html?'+ detailEncoded +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+		$('#secondlyInformation').prepend('<div class="informationWithDetail" onClick="location.href=\'detail.html?content='+ timelyInformation['content'] +'&detail='+ detailEncoded +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	} else if(timelyInformation['link'] != null) {
-		$('#secondlyon').prepend('<div class="informationWithLink" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+		$('#secondlyInformation').prepend('<div class="informationWithLink" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	} else {
-		$('#secondlyon').prepend('<div class="information"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+		$('#secondlyInformation').prepend('<div class="information"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	}
 	if(second < second_old) { // 0秒を越えたら
 		//updateMinute();
@@ -291,16 +293,9 @@ function updateDailyRSS() {
 <body onLoad="start();">
 		<div id="header">
 		<header>
-			<h1 style="font-size:20px; background-color:#CC0">毎秒更新！秒刊ハッピー</h1>
+			<h1>秒刊ハッピー</h1>
 		</header>
 		</div>
-		<div id="setting">
-        更新時間: 
-		<label><input type="radio" name="updateInterval" value="1" onClick="restart(1);">1秒</label>
-		<label><input type="radio" name="updateInterval" value="3" onClick="restart(3);" checked>3秒</label>
-		<label><input type="radio" name="updateInterval" value="5" onClick="restart(5);">5秒</label>
-		<label><input type="checkbox" id="pauseCheckbox" name="pause" value="pause" onClick="pause(($(this).attr('checked')=='checked')?true:false);">一時停止</label>
-        </div>
 		<div id="wapper">
 			<nav class="clearfix">
 				<ul id="menu">
@@ -310,14 +305,24 @@ function updateDailyRSS() {
 				</ul>
 			</nav>
 			<div id="secondlyon" class="content">
-				<!--<div class="secondly">-->
+				<section>
+					<ul id="timer" class="clearfix">
+						<li><button class="awesome green midium" onClick="restart(1);">1秒</button></li>
+						<li><button class="awesome green midium" onClick="restart(3);">3秒</button></li>
+						<li><button class="awesome green midium" onClick="restart(5);">5秒</button></li>
+						<li><button class="awesome green midium" onClick="pause();">一時停止</button></li>
+					</ul>
+				</section>
+				<article id="secondlyInformation">
                 <!--
-					<p>
-					<img src="img/ico_1.png" alt="テスト"/>
-					<a href=#>あああああああああああ</a>
-					</p>
+					<div class="secondly">
+						<p>
+						<img src="img/icon_1.png" alt="テスト"/>
+						<a href=#>あああああああああああ</a>
+						</p>
+					</div>
                     -->
-				<!--</div>-->
+				</article>
 			</div>
 			<div id="hourlyon" class="content">
             <!--
