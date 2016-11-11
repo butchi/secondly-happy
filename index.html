@@ -43,7 +43,6 @@ function getNowDate() {
 	if(year < 2000) { year += 1900; }
 }
 
-window.addEventListener("load", start, false);
 function start() {
 	clearInterval(timerID);
 	update();
@@ -103,7 +102,7 @@ function updateTime() {
 
 </script>
 </head>
-<body>
+<body onLoad="start();">
 
 <h1>秒刊ハッピー</h1>
 <div id="time"></div>
