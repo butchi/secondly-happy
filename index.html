@@ -1,4 +1,4 @@
-<!-- 03 分刊のタイミング変更、時刊・日刊を追加、日刊の運勢を実装、データフォーマット変更 -->
+<!-- 05 RSSの読み込みに対応 -->
 <html>
 <head>
 <meta charset="UTF-8">
@@ -17,6 +17,7 @@ h1 {font-size: 50px; background-color: #9999FF;}
 <script src="database03.js" type="text/javascript"></script>
 <script>
 var timerID;
+var RSStimerID;
 var weeks = new Array('日','月','火','水','木','金','土');
 var now;
 var year; // 年
@@ -30,6 +31,9 @@ var second; // 秒
 var dailyInformation;
 var hourlyInformation;
 var minutelyInformation;
+
+var feed_array = new Array();
+var latest_id = "";
 
 function getNowDate() {
 	now = new Date();
@@ -45,18 +49,27 @@ function getNowDate() {
 
 function start() {
 	clearInterval(timerID);
+	clearInterval(RSStimerID);
 	update();
 	updateMinute();
 	updateHour();
 	updateDay();
+	updateRSS();
 	timerID = setInterval(update, 1000);
+	
+	RSStimerID = setInterval(updateRSS,10000);
 	
 	//$('#daily').load('secondly_happy03_loadTest.html');
 }
 
 function update() {
 	updateTime();
-	var secondlyInformation = secondly_array[Math.floor( Math.random() * secondly_array.length )];
+	var secondlyInformation;
+	if(feed_array.length>0 && (second % 5 == 0)) {
+		secondlyInformation = ["Twitter", "", feed_array.shift().title, "", ""];
+	} else {
+		secondlyInformation = secondly_array[Math.floor( Math.random() * secondly_array.length )];
+	}
 	var secondlyImg;
 	if(secondlyInformation[1]!=null) {
 		secondlyImg = '<img height="32" width="32" src="'+secondlyInformation[1]+'">';
@@ -66,9 +79,9 @@ function update() {
 	$('#secondly').prepend('<div class="secondly">'+secondlyImg+'【'+secondlyInformation[0]+'】'+secondlyInformation[2]+'</div>');
 	if(second==0) {
 		updateMinute();
-		if(minute==47) {
+		if(minute==0) {
 			updateHour();
-			if(hour==16) {
+			if(hour==0) {
 				updateDay();
 			}
 		}
@@ -100,6 +113,29 @@ function updateTime() {
 	$('#time').html(year + '年' + month + '月' + day + '日（' + week + '）' + hour + '時' + minute + '分' + second + '秒');
 }
 
+function updateRSS() {
+	$.ajax({
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=324d80e335215700281005ba4d7135a8&_render=json&_callback=?",
+		dataType:"jsonp",
+		jsonp:"callback",
+		success:function(data){
+			var temp_array = new Array();
+			if(feed_array.length!=0) {
+				latest_id = feed_array[feed_array.length-1]['y:id'].value;
+			}
+			for(var i_counter=0; i_counter<data.value.items.length; i_counter++) {
+				if(latest_id == data.value.items[i_counter]['y:id'].value) {
+					break;
+				} else {
+					temp_array.push(data.value.items[i_counter]);
+				}
+			}
+			for(i_counter=temp_array.length-1; i_counter>=0; i_counter--) {
+				feed_array.push(temp_array[i_counter]);
+			}
+		}
+	});
+}
 </script>
 </head>
 <body onLoad="start();">
