@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- 10 Twitter RSSフィード更新、一般RSSフィード追加、時刊・日刊追加 -->
 <html lang="ja">
 	<head>
 		<meta charset="utf-8">
@@ -24,19 +25,30 @@ var now;
 var year; // 年
 var month; // 月
 var day; // 日
+//var day_old = -1;
 var week; // 曜日
 var hour; // 時
 var minute; // 分
-var second; // 秒
+//var minute_old = -1;
+var second = 60; // 秒
+var second_old;
+var count = 0;
 
-var dailyInformation;
+var timelyInformation;
 var hourlyInformation;
 var minutelyInformation;
 
+var tweet_array = new Array();
+var tweet_latest_id = "";
 var feed_array = new Array();
-var latest_id = "";
+var feed_latest_id = "";
+var feedHourly_array = new Array();
+var feedHourly_latest_id = "";
+var feedDaily_array = new Array();
+var feedDaily_latest_id = "";
 
 function getNowDate() {
+	
 	now = new Date();
 	year = now.getYear(); // 年
 	month = now.getMonth() + 1; // 月
@@ -56,9 +68,13 @@ function start() {
 	updateHour();
 	updateDay();
 	updateRSS();
+	updateHourlyRSS();
+	updateDailyRSS();
 	timerID = setInterval(update, timerInterval*1000);
 	
-	RSStimerID = setInterval(updateRSS,10000);
+	RSStimerID = setInterval(updateRSS,30000);
+	RSSHourlyTimerID = setInterval(updateHourlyRSS,30000);
+	RSSDailyTimerID = setInterval(updateDailyRSS,30000);
 	
 	//$('#daily').load('secondly_happy03_loadTest.html');
 }
@@ -81,48 +97,83 @@ function pause(isPause) {
 
 function update() {
 	updateTime();
-	var secondlyInformation;
-	if(feed_array.length>0 && (second % 5 == 0)) {
-		secondlyInformation = {"tag": "Twitter", "icon": "", "内容": feed_array.shift().title, "detail": "詳細", "link": ""};
+	//updateHour();
+	//updateDay();
+	var timelyInformation;
+	if(tweet_array.length>0 && (count % 6 == 0)) {
+		var feed = tweet_array.shift();
+		timelyInformation = {"tag": "Twitter", "content": feed['title'], "link": feed['link']};
+	} else if(feed_array.length>0 && ((count % 6 == 2) || (count % 6 == 4))) {
+		var feed = feed_array.shift();
+		timelyInformation = {"tag": "RSS", "content": feed['title'], "link": feed['link']};
 	} else {
-		secondlyInformation = secondly_array['items'][Math.floor( Math.random() * secondly_array['items'].length )];
+		timelyInformation = secondly_array['items'][Math.floor( Math.random() * secondly_array['items'].length )];
 	}
-	//console.log(secondlyInformation);
-	var secondlyImg;
-	if(secondlyInformation['icon']!="") {
-		secondlyImg = '<img height="32" width="32" src="'+secondlyInformation['icon']+'">';
+	//console.log(timelyInformation);
+	var timelyImg;
+	switch(timelyInformation['tag']) {
+		case "名言":
+		timelyImg = '<img height="32" width="32" src="img/ico_5.png">';
+		break;
+		
+		case "雑学":
+		timelyImg = '<img height="32" width="32" src="img/ico_5.png">';
+		break;
+		
+		case "クイズ":
+		timelyImg = '<img height="32" width="32" src="img/ico_3.png">';
+		break;
+		
+		case "Twitter":
+		timelyImg = '<img height="32" width="32" src="img/ico_1.png">';
+		break;
+		
+		default:
+		timelyImg = '<img height="32" width="32" src="img/ico_4.png">';
+		break;
+	}
+	if(timelyInformation['tag'] == "Twitter") {
+		$('#secondlyon').prepend('<div class="twitter" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+	} else if(timelyInformation['detail'] != null) {
+		var detailEncoded = encodeURI(timelyInformation['detail']);
+		$('#secondlyon').prepend('<div class="informationWithDetail" onClick="location.href=\'detail.html?'+ detailEncoded +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+	} else if(timelyInformation['link'] != null) {
+		$('#secondlyon').prepend('<div class="informationWithLink" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	} else {
-		secondlyImg = '';
+		$('#secondlyon').prepend('<div class="information"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	}
-	if(secondlyInformation['detail'] == "") {
-		$('#secondlyon').prepend('<div class="information"><p>'+secondlyImg+'【'+secondlyInformation['tag']+'】'+secondlyInformation['content']+'</p></div>');
-	} else {
-		var detailEncoded = encodeURI(secondlyInformation['detail']);
-		$('#secondlyon').prepend('<div class="informationWithDetail" onClick="location.href=\'detail.html?'+ detailEncoded +'\';"><p>'+secondlyImg+'【'+secondlyInformation['tag']+'】'+secondlyInformation['content']+'</p></div>');
-	}
-	if(second==0) {
+	if(second < second_old) { // 0秒を越えたら
 		//updateMinute();
-		if(minute==0) {
+		if(minute == 0) { // 0分を越えたら
 			updateHour();
-			if(hour==0) {
+			if(hour == 0) { // 0時を越えたら
 				updateDay();
 			}
 		}
 	}
-}
-
-function updateDay() {
-	var luck_array = new Array('大吉', '中吉', '小吉', '吉', '末吉', '凶', '大凶');
-	var luck = luck_array[Math.floor( Math.random() * luck_array.length )];
-	//$('#secondly').prepend($('#daily').html());
-	dailyInformation = month + '月' + day + '日のあなたの運勢は' + '<span style="color:#FF0000">' + luck + '</span>';
-	$('#dailyon').html('<div class="daily">'+dailyInformation+'</div>');
+	count++;
 }
 
 function updateHour() {
-	//$('#secondly').prepend($('#hourly').html());
-	hourlyInformation = hour + '時';
-	$('#hourlyon').html('<div class="hourly">'+hourlyInformation+'</div>');
+	var timelyInformation;
+	if(feedHourly_array.length>0) {
+		var feed = feedHourly_array.shift();
+		timelyInformation = {"tag": "RSS", "content": feed['title'], "link": feed['link']};
+		var timelyImg;
+		timelyImg = '<img height="32" width="32" src="img/ico_2.png">';
+		$('#hourlyon').prepend('<div class="informationWithLink" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+	}
+}
+
+function updateDay() {
+	var timelyInformation;
+	if(feedDaily_array.length>0) {
+		var feed = feedDaily_array.shift();
+		timelyInformation = {"tag": "RSS", "content": feed['title'], "link": feed['link']};
+		var timelyImg;
+		timelyImg = '<img height="32" width="32" src="img/ico_4.png">';
+		$('#dailyon').prepend('<div class="informationWithLink" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
+	}
 }
 
 //function updateMinute() {
@@ -132,22 +183,48 @@ function updateHour() {
 //}
 
 function updateTime() {
+	second_old = second;
+	//console.log(second_old);
 	getNowDate();	
 //	$('#time').html(year + '年' + month + '月' + day + '日（' + week + '）' + hour + '時' + minute + '分' + second + '秒');
 }
 
 function updateRSS() {
+	// Twitter RSSフィード
 	$.ajax({
-		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=324d80e335215700281005ba4d7135a8&_render=json&_callback=?",
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=b724e8634dd312cbb52a5ec96429d961&_render=json&_callback=?",
+		dataType:"jsonp",
+		jsonp:"callback",
+		success:function(data){
+			var temp_array = new Array();
+			if(tweet_array.length!=0) {
+				tweet_latest_id = tweet_array[tweet_array.length-1]['y:id'].value;
+			}
+			for(var i_counter=0; i_counter<data.value.items.length; i_counter++) {
+				if(tweet_latest_id == data.value.items[i_counter]['y:id'].value) {
+					break;
+				} else {
+					temp_array.push(data.value.items[i_counter]);
+				}
+			}
+			for(i_counter=temp_array.length-1; i_counter>=0; i_counter--) {
+				tweet_array.push(temp_array[i_counter]);
+			}
+		}
+	});
+	
+	// RSSフィード
+	$.ajax({
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=5a8ffc1e1ac1786678e9b9c51eac4ba9&_render=json&_callback=?",
 		dataType:"jsonp",
 		jsonp:"callback",
 		success:function(data){
 			var temp_array = new Array();
 			if(feed_array.length!=0) {
-				latest_id = feed_array[feed_array.length-1]['y:id'].value;
+				feed_latest_id = feed_array[feed_array.length-1]['link'].value;
 			}
 			for(var i_counter=0; i_counter<data.value.items.length; i_counter++) {
-				if(latest_id == data.value.items[i_counter]['y:id'].value) {
+				if(feed_latest_id == data.value.items[i_counter]['link'].value) {
 					break;
 				} else {
 					temp_array.push(data.value.items[i_counter]);
@@ -155,6 +232,56 @@ function updateRSS() {
 			}
 			for(i_counter=temp_array.length-1; i_counter>=0; i_counter--) {
 				feed_array.push(temp_array[i_counter]);
+			}
+		}
+	});
+}
+
+function updateHourlyRSS() {
+	// 時刊RSSフィード
+	$.ajax({
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=5a8ffc1e1ac1786678e9b9c51eac4ba9&_render=json&_callback=?",
+		dataType:"jsonp",
+		jsonp:"callback",
+		success:function(data){
+			var temp_array = new Array();
+			if(feedHourly_array.length!=0) {
+				feedHourly_latest_id = feedHourly_array[feedHourly_array.length-1]['link'].value;
+			}
+			for(var i_counter=0; i_counter<data.value.items.length; i_counter++) {
+				if(feedHourly_latest_id == data.value.items[i_counter]['link'].value) {
+					break;
+				} else {
+					temp_array.push(data.value.items[i_counter]);
+				}
+			}
+			for(i_counter=temp_array.length-1; i_counter>=0; i_counter--) {
+				feedHourly_array.push(temp_array[i_counter]);
+			}
+		}
+	});
+}
+
+function updateDailyRSS() {
+	// 時刊RSSフィード
+	$.ajax({
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=5a8ffc1e1ac1786678e9b9c51eac4ba9&_render=json&_callback=?",
+		dataType:"jsonp",
+		jsonp:"callback",
+		success:function(data){
+			var temp_array = new Array();
+			if(feedDaily_array.length!=0) {
+				feedDaily_latest_id = feedDaily_array[feedDaily_array.length-1]['link'].value;
+			}
+			for(var i_counter=0; i_counter<data.value.items.length; i_counter++) {
+				if(feedDaily_latest_id == data.value.items[i_counter]['link'].value) {
+					break;
+				} else {
+					temp_array.push(data.value.items[i_counter]);
+				}
+			}
+			for(i_counter=temp_array.length-1; i_counter>=0; i_counter--) {
+				feedDaily_array.push(temp_array[i_counter]);
 			}
 		}
 	});
@@ -186,7 +313,7 @@ function updateRSS() {
 				<!--<div class="secondly">-->
                 <!--
 					<p>
-					<img src="img/icon_1.png" alt="テスト"/>
+					<img src="img/ico_1.png" alt="テスト"/>
 					<a href=#>あああああああああああ</a>
 					</p>
                     -->
