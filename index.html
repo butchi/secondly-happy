@@ -18,7 +18,7 @@
 		<script src="js/database06.js" type="text/javascript"></script>
 <script>
 var timerID;
-var timerInterval = 1; // 更新間隔（秒）
+var timerInterval = 3; // 更新間隔（秒）
 var RSStimerID;
 var weeks = new Array('日','月','火','水','木','金','土');
 var now;
@@ -72,9 +72,9 @@ function start() {
 	updateDailyRSS();
 	timerID = setInterval(update, timerInterval*1000);
 	
-	RSStimerID = setInterval(updateRSS,30000);
-	RSSHourlyTimerID = setInterval(updateHourlyRSS,30000);
-	RSSDailyTimerID = setInterval(updateDailyRSS,30000);
+	RSStimerID = setInterval(updateRSS,60*1000); // 60秒おきに更新
+	RSSHourlyTimerID = setInterval(updateHourlyRSS,60*60*1000); // 1時間おきに更新
+	RSSDailyTimerID = setInterval(updateDailyRSS,24*60*60*1000); // 1日おきに更新
 	
 	//$('#daily').load('secondly_happy03_loadTest.html');
 }
@@ -100,10 +100,10 @@ function update() {
 	//updateHour();
 	//updateDay();
 	var timelyInformation;
-	if(tweet_array.length>0 && (count % 6 == 0)) {
+	if(tweet_array.length>0 && (count % 6 == 1)) {
 		var feed = tweet_array.shift();
 		timelyInformation = {"tag": "Twitter", "content": feed['title'], "link": feed['link']};
-	} else if(feed_array.length>0 && ((count % 6 == 2) || (count % 6 == 4))) {
+	} else if(feed_array.length>0 && ((count % 3 == 0) || (count % 3 == 1))) {
 		var feed = feed_array.shift();
 		timelyInformation = {"tag": "RSS", "content": feed['title'], "link": feed['link']};
 	} else {
@@ -171,7 +171,7 @@ function updateDay() {
 		var feed = feedDaily_array.shift();
 		timelyInformation = {"tag": "RSS", "content": feed['title'], "link": feed['link']};
 		var timelyImg;
-		timelyImg = '<img height="32" width="32" src="img/ico_4.png">';
+		timelyImg = '<img height="32" width="32" src="img/ico_2.png">';
 		$('#dailyon').prepend('<div class="informationWithLink" onClick="location.href=\''+ timelyInformation['link'] +'\';"><p>'+timelyImg+timelyInformation['content']+'</p></div>');
 	}
 }
@@ -240,7 +240,7 @@ function updateRSS() {
 function updateHourlyRSS() {
 	// 時刊RSSフィード
 	$.ajax({
-		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=5a8ffc1e1ac1786678e9b9c51eac4ba9&_render=json&_callback=?",
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=a7cf4bae7c9801becd83f9ebdf187d5c&_render=json&_callback=?",
 		dataType:"jsonp",
 		jsonp:"callback",
 		success:function(data){
@@ -263,9 +263,9 @@ function updateHourlyRSS() {
 }
 
 function updateDailyRSS() {
-	// 時刊RSSフィード
+	// 日刊RSSフィード
 	$.ajax({
-		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=5a8ffc1e1ac1786678e9b9c51eac4ba9&_render=json&_callback=?",
+		url:"http://pipes.yahoo.com/pipes/pipe.run?_id=89a5328ee9272a3749af9b580145a829&_render=json&_callback=?",
 		dataType:"jsonp",
 		jsonp:"callback",
 		success:function(data){
@@ -291,13 +291,13 @@ function updateDailyRSS() {
 <body onLoad="start();">
 		<div id="header">
 		<header>
-			<h1>毎秒更新！秒刊ハッピー</h1>
+			<h1 style="font-size:20px; background-color:#CC0">毎秒更新！秒刊ハッピー</h1>
 		</header>
 		</div>
 		<div id="setting">
         更新時間: 
-		<label><input type="radio" name="updateInterval" value="1" onClick="restart(1);" checked>1秒</label>
-		<label><input type="radio" name="updateInterval" value="3" onClick="restart(3);">3秒</label>
+		<label><input type="radio" name="updateInterval" value="1" onClick="restart(1);">1秒</label>
+		<label><input type="radio" name="updateInterval" value="3" onClick="restart(3);" checked>3秒</label>
 		<label><input type="radio" name="updateInterval" value="5" onClick="restart(5);">5秒</label>
 		<label><input type="checkbox" id="pauseCheckbox" name="pause" value="pause" onClick="pause(($(this).attr('checked')=='checked')?true:false);">一時停止</label>
         </div>
