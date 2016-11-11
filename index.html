@@ -1,16 +1,20 @@
-<!-- 02 -->
+<!-- 03 分刊のタイミング変更、時刊・日刊を追加、日刊の運勢を実装、データフォーマット変更 -->
 <html>
 <head>
+<meta charset="UTF-8">
 <style>
 h1 {font-size: 50px; background-color: #9999FF;}
 #time {font-size: 30px;}
-#daily {background-color: #3333FF;}
-#hourly {background-color: #6666FF;}
-#minutely {background-color: #9999FF;}
-#secondly div {background-color: #CCCCFF; padding:5px; margin:5px;}
+#daily {background-color: #3333FF; margin:5px;}
+#hourly {background-color: #6666FF; margin:5px;}
+#minutely {background-color: #9999FF; margin:5px;}
+.daily {background-color: #3333FF; padding:5px; margin:5px;}
+.hourly {background-color: #6666FF; padding:5px; margin:5px;}
+.minutely {background-color: #9999FF; padding:5px; margin:5px;}
+.secondly {background-color: #CCCCFF; padding:5px; margin:5px;}
 </style>
 <script src="jquery-1.6.4.min.js" type="text/javascript"></script>
-<script src="database01.js" type="text/javascript"></script>
+<script src="database03.js" type="text/javascript"></script>
 <script>
 var timerID;
 var weeks = new Array('日','月','火','水','木','金','土');
@@ -44,26 +48,52 @@ function start() {
 	clearInterval(timerID);
 	update();
 	updateMinute();
+	updateHour();
+	updateDay();
 	timerID = setInterval(update, 1000);
+	
+	//$('#daily').load('secondly_happy03_loadTest.html');
 }
 
 function update() {
 	updateTime();
-	var secondly_data = data_array[Math.floor( Math.random() * data_array.length )];
-	if(now.getSeconds()==0) {
-		updateMinute();
+	var secondlyInformation = secondly_array[Math.floor( Math.random() * secondly_array.length )];
+	var secondlyImg;
+	if(secondlyInformation[1]!=null) {
+		secondlyImg = '<img height="32" width="32" src="'+secondlyInformation[1]+'">';
+	} else {
+		secondlyImg = '';
 	}
-	$('#secondly').prepend('<div class="secondly">'+secondly_data+'</div>');
+	$('#secondly').prepend('<div class="secondly">'+secondlyImg+'【'+secondlyInformation[0]+'】'+secondlyInformation[2]+'</div>');
+	if(second==0) {
+		updateMinute();
+		if(minute==47) {
+			updateHour();
+			if(hour==16) {
+				updateDay();
+			}
+		}
+	}
+}
+
+function updateDay() {
+	var luck_array = new Array('大吉', '中吉', '小吉', '吉', '末吉', '凶', '大凶');
+	var luck = luck_array[Math.floor( Math.random() * luck_array.length )];
+	$('#secondly').prepend($('#daily').html());
+	dailyInformation = month + '月' + day + '日のあなたの運勢は' + '<span style="color:#FF0000">' + luck + '</span>';
+	$('#daily').html('<div class="daily">'+dailyInformation+'</div>');
+}
+
+function updateHour() {
+	$('#secondly').prepend($('#hourly').html());
+	hourlyInformation = hour + '時';
+	$('#hourly').html('<div class="hourly">'+hourlyInformation+'</div>');
 }
 
 function updateMinute() {
-	minutelyInformation = minute + "分";
-	$('#minutely').html('<div class="minutely">'+minutelyInformation+'</div>');
 	$('#secondly').prepend($('#minutely').html());
-	//minute = Math.floor(time/60);
-	//var minuteEquation = equation_array[minute][Math.floor( Math.random() * equation_array[minute].length )];
-	//$('#minuteCounter').html(minuteEquation);
-	//$('#minuteLog').html("<div>"+minute+" = "+minuteEquation+"</div>");
+	minutelyInformation = minute + '分';
+	$('#minutely').html('<div class="minutely">'+minutelyInformation+'</div>');
 }
 
 function updateTime() {
